@@ -33,6 +33,7 @@ blueprint:
       default: []
       selector:
         action: {}
+  source_url: https://github.com/Sakrapher/HA-Blueprints/edit/main/Z2M_Sonoff-SNZB-01-Wireless-Switch.yaml
 mode: parallel
 max_exceeded: silent
 max: 10
