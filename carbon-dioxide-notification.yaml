@@ -2,6 +2,7 @@ blueprint:
   name: CO2-Warnung
   author: Sakrapher
   description: Sendet eine Benachrichtigung, wenn der CO₂-Wert zu hoch wird, und informiert, wenn er wieder normal ist.
+  source_url: 'https://github.com/Sakrapher/HA-Blueprints/edit/main/carbon-dioxide-notification.yaml'
   domain: automation
   input:
     co2_sensor:
@@ -17,7 +18,6 @@ blueprint:
       selector:
         device:
           integration: mobile_app
-          #multiple: true
 
     # Einstellungen für hohe CO₂-Werte
     high_threshold:
