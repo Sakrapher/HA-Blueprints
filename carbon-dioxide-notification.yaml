@@ -1,5 +1,6 @@
 blueprint:
   name: CO2-Warnung
+  author: Sakrapher
   description: Sendet eine Benachrichtigung, wenn der CO₂-Wert zu hoch wird, und informiert, wenn er wieder normal ist.
   domain: automation
   input:
