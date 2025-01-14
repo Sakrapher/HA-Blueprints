@@ -1,0 +1,114 @@
+blueprint:
+  name: CO2-Warnung
+  description: Sendet eine Benachrichtigung, wenn der CO₂-Wert zu hoch wird, und informiert, wenn er wieder normal ist.
+  domain: automation
+  input:
+    co2_sensor:
+      name: CO₂-Sensor
+      description: Wählen Sie einen CO₂-Sensor.
+      selector:
+        entity:
+          domain: sensor
+          device_class: carbon_dioxide
+    notify_targets:
+      name: Benachrichtigungsziele
+      description: Wählen Sie ein oder mehrere Mobile-App-Benachrichtigungsziele aus.
+      selector:
+        device:
+          integration: mobile_app
+          #multiple: true
+
+    # Einstellungen für hohe CO₂-Werte
+    high_threshold:
+      name: Oberer Grenzwert
+      description: CO₂-Wert, der als "zu hoch" gilt. Der Wert sollte innerhalb des typischen Sensorbereichs liegen (400-2000 ppm).
+      default: 1400
+      selector:
+        number:
+          min: 400
+          max: 2000
+          step: 10
+          mode: slider
+    high_message:
+      name: Benachrichtigungstext bei hohem Wert
+      description: Nachricht, wenn der CO₂-Wert zu hoch ist.
+      default: "Der CO2-Wert ist zu hoch! Bitte Lüften!"
+      selector:
+        text:
+    high_actions:
+      name: Aktionen bei hohem Wert
+      description: Fügen Sie Aktionen hinzu, die bei einem hohen CO₂-Wert ausgeführt werden.
+      default: []
+      selector:
+        action: {}
+
+    # Einstellungen für normale CO₂-Werte
+    low_threshold:
+      name: Unterer Grenzwert
+      description: CO₂-Wert, bei dem wieder "normal" signalisiert wird. Muss kleiner als der obere Grenzwert sein.
+      default: 800
+      selector:
+        number:
+          min: 400
+          max: 2000
+          step: 10
+          mode: slider
+    low_message:
+      name: Benachrichtigungstext bei normalem Wert
+      description: Nachricht, wenn der CO₂-Wert wieder normal ist.
+      default: "Der CO2-Wert ist wieder normal!"
+      selector:
+        text:
+    low_actions:
+      name: Aktionen bei normalem Wert
+      description: Fügen Sie Aktionen hinzu, die bei einem niedrigen CO₂-Wert ausgeführt werden.
+      default: []
+      selector:
+        action: {}
+
+variables:
+  co2_sensor: !input co2_sensor
+  notify_targets: !input notify_targets
+  high_threshold: !input high_threshold
+  low_threshold: !input low_threshold
+  high_message: !input high_message
+  low_message: !input low_message
+
+trigger:
+  - platform: numeric_state
+    entity_id: !input co2_sensor
+    above: !input high_threshold
+    id: "high"
+  - platform: numeric_state
+    entity_id: !input co2_sensor
+    below: !input low_threshold
+    id: "low"
+
+condition: []
+
+action:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: "high"
+        sequence:
+          - domain: mobile_app
+            type: notify
+            device_id: !input notify_targets
+            message: "{{ high_message }}"
+            title: "⚠️ CO₂-Warnung"
+          - choose:
+              - conditions: []
+                sequence: !input high_actions
+      - conditions:
+          - condition: trigger
+            id: "low"
+        sequence:
+          - domain: mobile_app
+            type: notify
+            device_id: !input notify_targets
+            message: "{{ low_message }}"
+            title: "✅ CO₂-Meldung"
+          - choose:
+              - conditions: []
+                sequence: !input low_actions
