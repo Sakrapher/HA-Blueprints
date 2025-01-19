@@ -18,6 +18,7 @@ blueprint:
       selector:
         device:
           integration: mobile_app
+          multiple: true
 
     # Einstellungen für hohe CO₂-Werte
     high_threshold:
@@ -33,11 +34,11 @@ blueprint:
     high_message:
       name: Benachrichtigungstext bei hohem Wert
       description: Nachricht, wenn der CO₂-Wert zu hoch ist.
-      default: "Der CO2-Wert ist zu hoch! Bitte Lüften!"
+      default: "Der CO2-Wert ist zu hoch!"
       selector:
         text:
     high_actions:
-      name: Aktionen bei hohem Wert
+      name: (Optional) Aktionen bei hohem Wert
       description: Fügen Sie Aktionen hinzu, die bei einem hohen CO₂-Wert ausgeführt werden.
       default: []
       selector:
@@ -61,11 +62,17 @@ blueprint:
       selector:
         text:
     low_actions:
-      name: Aktionen bei normalem Wert
+      name: (Optional) Aktionen bei normalem Wert
       description: Fügen Sie Aktionen hinzu, die bei einem niedrigen CO₂-Wert ausgeführt werden.
       default: []
       selector:
         action: {}
+    low_condition:
+      name: (Optional) Zusätzliche Bedingung für Low
+      description: Optional, Bedingung die erfüllt sein muss, damit die Low-Aktion ausgeführt wird.
+      default: []
+      selector:
+        condition: {}
 
 variables:
   co2_sensor: !input co2_sensor
@@ -74,6 +81,7 @@ variables:
   low_threshold: !input low_threshold
   high_message: !input high_message
   low_message: !input low_message
+  low_condition: !input low_condition
 
 trigger:
   - platform: numeric_state
@@ -104,6 +112,7 @@ action:
       - conditions:
           - condition: trigger
             id: "low"
+          - condition: !input low_condition
         sequence:
           - domain: mobile_app
             type: notify
