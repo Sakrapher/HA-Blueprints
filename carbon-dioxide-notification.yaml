@@ -92,8 +92,6 @@ trigger:
     below: !input low_threshold
     id: "low"
 
-condition: []
-
 action:
   - choose:
       - conditions:
