@@ -18,11 +18,12 @@ blueprint:
       selector:
         device:
           integration: mobile_app
+          multiple: true
 
     # Einstellungen für hohe CO₂-Werte
     high_threshold:
       name: Oberer Grenzwert
-      description: CO₂-Wert, der als "zu hoch" gilt. Der Wert sollte innerhalb des typischen Sensorbereichs liegen (400-2000 ppm).
+      description: CO₂-Wert, der als "zu hoch" gilt. Der Wert sollte innerhalb des typischen Sensorbereichs liegen (1400-2000 ppm).
       default: 1400
       selector:
         number:
@@ -62,7 +63,7 @@ blueprint:
         text:
     low_condition:
       name: (Optional) Zusätzliche Bedingung für Low
-      description: Optional, Bedingung die erfüllt sein muss, damit die Low-Aktion ausgeführt wird.
+      description: Optional, Bedingung die erfüllt sein muss, damit die Low-Aktion ausgeführt wird. Muss eine gültige Bedingung enthalten, wenn spezifiziert.
       default: []
       selector:
         condition: {}
@@ -98,11 +99,14 @@ action:
           - condition: trigger
             id: "high"
         sequence:
-          - domain: mobile_app
-            type: notify
-            device_id: !input notify_targets
-            message: "{{ high_message }}"
-            title: "⚠️ CO₂-Warnung"
+          - alias: Send a notification to each device
+            repeat:
+              for_each: !input notify_targets
+              sequence:
+              - action: notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}
+                data:
+                  title: "⚠️ CO₂-Warnung"
+                  message: "{{ high_message }}"
           - choose:
               - conditions: []
                 sequence: !input high_actions
@@ -111,11 +115,14 @@ action:
             id: "low"
           - condition: !input low_condition
         sequence:
-          - domain: mobile_app
-            type: notify
-            device_id: !input notify_targets
-            message: "{{ low_message }}"
-            title: "✅ CO₂-Meldung"
+          - alias: Send a notification to each device
+            repeat:
+              for_each: !input notify_targets
+              sequence:
+              - action: notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}
+                data:
+                  title: "✅ CO₂-Meldung"
+                  message: "{{ low_message }}"
           - choose:
               - conditions: []
                 sequence: !input low_actions
