@@ -34,7 +34,7 @@ blueprint:
     high_message:
       name: Benachrichtigungstext bei hohem Wert
       description: Nachricht, wenn der CO₂-Wert zu hoch ist.
-      default: "Der CO2-Wert ist zu hoch!"
+      default: "Der CO2-Wert ist zu hoch! Bitte Lüften!""
       selector:
         text:
     high_actions:
