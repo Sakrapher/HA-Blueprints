@@ -1,0 +1,75 @@
+blueprint:
+  name: "Humidifier Water Empty Notification"
+  author: Sakrapher
+  description: >
+    Notify when one or more selected humidifier water tank sensors report that the water is empty.
+    Note: Friendly Names of the mobile apps must not contain special characters, as they are used to construct the service name.
+  source_url: 'https://github.com/Sakrapher/HA-Blueprints/main/humidifier-water-empty-notification.yaml'
+  domain: automation
+  input:
+    moisture_sensors:
+      name: Water Tank
+      description: "Select the water tank to monitor."
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: moisture
+          multiple: true
+
+    notify_targets:
+      name: Notification Targets
+      description: Select one or more Home Assistant mobile app notify targets.
+      selector:
+        device:
+          integration: mobile_app
+          multiple: true
+    
+    title:
+      name: Notification Title
+      description: The title that will be shown in the notification.
+      default: "Humidifier Alert"
+      selector:
+        text:
+    
+    message:
+      name: Notification Message
+      description: >
+        The message that will be sent when water runs out.  
+        Use `{{ sensor_name }}` in the text to include the triggering sensor’s friendly name.
+      default: "💧Water empty: {{ sensor_name }}"
+      selector:
+        text:
+
+    extra_actions:
+      name: Extra Actions
+      description: Optional extra actions to run in addition to the notification.
+      default: []
+      selector:
+        action:
+
+mode: restart
+max_exceeded: silent
+
+trigger:
+  - platform: state
+    entity_id: !input moisture_sensors
+    from: "on"
+    to: "off"
+
+action:
+  - variables:
+      notify_targets: !input notify_targets
+      sensor_name: "{{ trigger.to_state.name }}"
+      title: !input title
+      message: !input message
+
+  - repeat:
+      for_each: !input notify_targets
+      sequence:
+        - action: notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}
+          data:
+            title: "{{ title }}"
+            message: "{{ message }}"
+
+  - choose: []
+    default: !input extra_actions
